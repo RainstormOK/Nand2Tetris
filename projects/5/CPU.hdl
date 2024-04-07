@@ -1,0 +1,120 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/5/CPU.hdl
+/**
+ * The Hack Central Processing unit (CPU).
+ * Parses the binary code in the instruction input and executes it according to the
+ * Hack machine language specification. In the case of a C-instruction, computes the
+ * function specified by the instruction. If the instruction specifies to read a memory
+ * value, the inM input is expected to contain this value. If the instruction specifies
+ * to write a value to the memory, sets the outM output to this value, sets the addressM
+ * output to the target address, and asserts the writeM output (when writeM = 0, any
+ * value may appear in outM).
+ * If the reset input is 0, computes the address of the next instruction and sets the
+ * pc output to that value. If the reset input is 1, sets pc to 0.
+ * Note: The outM and writeM outputs are combinational: they are affected by the
+ * instruction's execution during the current cycle. The addressM and pc outputs are
+ * clocked: although they are affected by the instruction's execution, they commit to
+ * their new values only in the next cycle.
+ */
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    Mux16 (a = instruction, b = ALUoutput, sel = instruction[15], out = RAinput);
+    Not (in = instruction[15], out = ninstruction15);
+    Or (a = instruction[5], b = ninstruction15, out = RAload);
+    ARegister (in = RAinput, load = RAload, out = RAoutput);
+    Mux16 (a = RAoutput, b = inM, sel = instruction[12], out = ALUinputAM);
+    ALU (x = RDoutput, y = ALUinputAM, zx = instruction[11], nx = instruction[10], zy = instruction[9], ny = instruction[8], f = instruction[7], no = instruction[6], out = ALUoutput, zr = zr, ng = ng);
+    And (a = instruction[2], b = ng, out = j1jump);
+    And (a = instruction[1], b = zr, out = j2jump);
+    Or (a = ng, b = zr, out = j3jumptmp1);
+    Not (in = j3jumptmp1, out = j3jumptmp2);
+    And (a = instruction[0], b = j3jumptmp2, out = j3jump);
+
+    Or (a = j1jump, b = j2jump, out = jumpconditiontmp1);
+    Or (a = jumpconditiontmp1, b = j3jump, out = jumpconditiontmp2);   
+    And (a = jumpconditiontmp2, b = instruction[15], out = jumpcondition);
+
+    And (a = instruction[4], b = instruction[15], out = RDload);
+    DRegister (in = ALUoutput, load = RDload, out = RDoutput);
+
+    Not16 (in = RAoutput, out = nRAoutput);
+    Not16 (in = nRAoutput, out[0..14] = addressM);
+
+    Not16 (in = ALUoutput, out = nALUoutput);
+    Not16 (in = nALUoutput, out = outM);
+
+    And (a = instruction[3], b = instruction[15], out = writeM);
+
+    Not (in = reset, out = nreset);
+    Or (a = reset, b = nreset, out = all1);
+    PC (in = RAoutput, load = jumpcondition, reset = reset, inc = all1, out[0..14] = pc);
+
+
+
+// 	//// Replace this comment with your code.
+
+// // //////reset
+//      Not (in = reset, out = nreset);  
+//      Or (a = reset, b = nreset, out = all1);
+//      And (a = reset, b = nreset, out = all0);
+
+// //////register
+// //rm = inM
+//     Not16 (in = inM, out = nrm);
+//     Not16 (in = nrm, out = rm);
+// //////instruction
+//     DMux (sel = instruction[15], a = ainstruction, b = cinstruction);
+// ////A-instruction
+//     ARegister (in = instruction, load = ainstruction);
+// ////C-instruction
+// //compute
+//     ARegister (in = inM, load = all0, out = ra);
+//     DRegister (in = inM, load = all0, out = rd);
+//     ALU (x = rd, y = ra, zx = instruction[11], nx = instruction[10], zy = instruction[9], ny = instruction[8], f = instruction[7], no = instruction[6], out = cina0, zr = zra0, ng = nga0); 
+//     ALU (x = rd, y = rm, zx = instruction[11], nx = instruction[10], zy = instruction[9], ny = instruction[8], f = instruction[7], no = instruction[6], out = cina1, zr = zra1, ng = nga1); 
+
+//     Mux16 (a = cina0, b = cina1, sel = instruction[12], out = cincomp);
+//     Mux (a = zra0, b = zra1, sel = instruction[12], out = cinzr);
+//     Mux (a = nga0, b = nga1, sel = instruction[12], out = cinng);
+// //destination
+//     Mux16 (sel = instruction[5], a = ra, b = cincomp, out = ranew); 
+//     ARegister (in = ranew, load = ainstruction, out = ra);
+//     Mux16 (sel = instruction[4], a = rd, b = cincomp, out = rdnew); 
+//     DRegister (in = rdnew, load = ainstruction, out = rd);
+//     Mux16 (sel = instruction[3], a = rm, b = cincomp, out = rmnew); 
+// //jump 
+//     And (a = instruction[2], b = cinng, out = j1jump);
+//     And (a = instruction[1], b = cinzr, out = j2jump);
+//     Or (a = cinng, b = cinzr, out = j3jumptmp1);
+//     Not (in = j3jumptmp1, out = j3jumptmp2);
+//     And (a = instruction[0], b = j3jumptmp2, out = j3jump);
+
+//     Or (a = j1jump, b = j2jump, out = jumpconditiontmp);
+//     Or (a = jumpconditiontmp, b = j3jump, out = jumpcondition);
+//     //if jumpcondition == 1, jump to the address of ra...
+//     //else, pc += 1
+
+//     ALU (x = ra, y = pcin, zx = all1, nx = all1, zy = all0, ny = all1, f = all1, no = all1, out = pcadd1);
+//     ALU (x = ra, y = pcin, zx = all0, nx = all0. zy = all1, ny = all0, f = all1, no = all0, out = pca);
+//     ALU (x = ra, y = pcin, zx = all1, nx = all0. zy = all1, ny = all0, f = all1, no = all0, out = pc0);
+
+//     Mux4Way16(a = pcadd1, b = pc0, c = pca, d = pc0, sel[0] = reset, sel[1] = jumpcondition ,out = pcin);
+
+//     Not16 (in = pcin, out = npc);
+//     Not16 (in = npc, out = pc);
+
+}

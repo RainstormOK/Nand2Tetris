@@ -1,0 +1,12 @@
+CHIP fzx {
+    IN x[16], zx;
+    OUT out[16];
+
+    PARTS:
+    Or161 (a = x, b = zx, out = fx); // if zx == 1, then fx = all 1; else fx = x
+    Not16 (in = fx, out = nfx); //if zx == 1, then nfx = ~fx = all 0;
+    Not (in = zx, out = nzx); //Now we make a choice
+    And1 (a = x, b = nzx, out = zx0);
+    And1 (a = nfx, b = zx, out = zx1);
+    Or16 (a = zx1, b = zx0, out = out);
+}

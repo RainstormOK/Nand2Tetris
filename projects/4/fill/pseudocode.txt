@@ -1,0 +1,19 @@
+while (1)
+{
+    if KBD != 0
+    {
+        addr = SCREEN
+        for (i = 0; i < 8192; i++)
+        {
+            *(addr + i) = -1
+        }
+    }
+    else
+    {
+        addr = SCREEN
+        for (i = 0; i < 8192; i++)
+        {
+            *(addr + i) = 0
+        }        
+    }
+}

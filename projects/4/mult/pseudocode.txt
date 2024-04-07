@@ -1,0 +1,6 @@
+n = RAM[1];
+x = RAM[2];
+for (int i = 0; i < n; i++)
+{
+    x = x + RAM[0];
+}

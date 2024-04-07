@@ -1,0 +1,218 @@
+#define INIT_ADDRESS 16
+#define LABLE 0
+#define SYMBOL 1
+#define MAX_LENGTH_OF_C_INSTRUCTION 11 + 1
+#define MAX_LENGTH_OF_A_INSTRUCTION 64 + 1
+table *first_read(table *head,FILE *fp)
+{
+    int i = -1
+    while ((c = fgetc(fr)) != EOF)
+    {
+        if (c == '(')
+        {
+            head = read_lable(head, fr, fw, i + 1);
+        }
+        else if (c == '\n' || c == '\t' || c == ' ')
+        {
+            continue;
+        }
+        else
+        {
+            i++
+            while ((c = fgetc(fr)) != '\n' || c != '\t');
+
+        }
+
+    }
+
+    return head
+}
+
+table *read_lable(table *head, FILE *fp, int address)
+{
+    char string_lable[MAX_LENGTH_OF_A_INSTRUCTION];
+    int i = 0;
+    while ((c = fgetc(fp)) != ')')
+    {
+        string_lable[i] = c
+        i++
+    }
+    
+    string_lable[i] = '\0'
+    head = table_add_lable(head, string_lable, address)
+    return head;
+}
+
+typedef struct table
+{
+    char *name;
+    int address;
+    char type;
+    struct table *next;
+} table;
+
+table *table_add_lable(table *head, char *string_lable, int address)
+{
+    table *newnode = malloc(sizeof(table));
+    newnode.next = head;
+    strcpy(newnode.name, string);
+    newnode.address = address;
+    newnode.type = type;
+
+    head = newnode
+
+    return head;
+} 
+
+
+table *second_read(table *head,FILE *fp)
+{
+    while ((c = fgetc()) != EOF)
+    {
+        if (c == '@')
+        {
+            head = read_symble(head, fp)
+        }
+        else if (c == '(')
+        {
+            while (fgetc() != ')')
+        }
+        else if (c != '\n' && c != '\t' && c != ' ') 
+        {
+            char string[MAX_LENGTH_OF_C_INSTRUCTION]
+            string[0] = c
+            int i = 1
+            while ((c = fgetc()) != '\n' && c != '\t')
+            {
+                if (c == ' ')
+                    continue;
+                string[i] = c 
+                i++
+            }
+            string[i] = '\0'
+
+            c_instruction_split(string)
+        }
+            
+    }
+}
+
+table *read_symble(table *head, FILE* fp)
+{
+    int i = 0
+    char string[MAX_LENGTH_OF_A_INSTRUCTION];
+    while ((c = fgetc(fp)) != '\n' && c != '\t' && c != ' ')
+    {
+        string[i] = c;
+        i++
+    }
+    string[i] = '\0'
+    head = symble_or_lable(head, string)
+}
+
+table *symble_or_lable(table *head, char *string)
+{
+    table *tmp = head;
+    max_address = INIT_ADDRESS; 
+    while (tmp != NULL)
+    {
+        if (max_address <= tmp -> address && tmp -> type = SYMBOL)
+        {
+            max_address = tmp -> address + 1
+        }
+        if (strcmp(tmp -> name, string))
+        {
+            fprintf("0")
+            fprintf(%15x, tmp -> address)
+            return head;
+        }
+        tmp = tmp -> next  // print lack
+    }
+    table *newnode = malloc(sizeof(table))
+    strcpy(newnode -> name, string) 
+    newnode -> next = head
+    newnode -> address = max_address
+    newnode -> type = SYMBOL
+    head = newnode
+    
+    return head
+}
+
+void c_instruction_split(char *string)
+{
+    printf(111)
+    comp_check(string);
+    dest_check(string); 
+}
+
+void dest_check(char *string)
+{
+    int i = 0;
+    while (string[i] != '=' && i < MAX_LENGTH_OF_C_INSTRUCTION)
+        i++; 
+    
+    if (i == MAX_LENGTH_OF_C_INSTRUCTION)
+        fprintf(000)
+    else if (i == 1)
+    {
+        if (string[0] == 'A')
+        {
+            print(100)
+        }
+        else if (string[0] == 'M')
+        {
+            printf(001)
+        }
+        else
+        {
+            printf(010)
+        }
+    }
+    else if (i == 2)
+    {
+        if (string[0] == 'M' && string[1] == 'D')
+        {
+            printf(011)
+        }
+        else if (string[0] == 'A' && string[1] == 'M')
+        {
+            printf(101)
+        }
+        else if (string[0] == 'A' && string[1] == 'D')
+        {
+            printf(110)
+        }
+        else
+        {
+            exit(1)
+        }
+    }
+    else if (i == 3)
+    {
+        if (string[0] == 'A' && string[1] == 'M' && string[2] == 'D')
+        {
+            printf(111)
+        }
+        else
+        {
+            exit(1)
+        }
+    }
+    
+}
+
+void comp_check(char *string)
+{
+    int i = 0;
+    while (string[i] != '=' && i < MAX_LENGTH_OF_C_INSTRUCTION)
+        i++; 
+
+    int j = 0;
+    while (string[j] != ';' && j < MAX_LENGTH_OF_C_INSTRUCTION)
+        j++ 
+
+    if (i == MAX_LENGTH_OF_C_INSTRUCTION)   
+    {
+
+    } 
+}
